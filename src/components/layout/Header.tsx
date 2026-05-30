@@ -142,9 +142,11 @@ export default function Header() {
           </button>
 
           {/* User Profile / CTA */}
-          <button className="hidden sm:block px-5 py-2 rounded-full bg-gradient-to-r from-electric-cyan/10 to-neon-purple/10 border border-electric-cyan/30 text-xs font-bold text-white hover:border-electric-cyan/60 hover:shadow-[0_0_15px_rgba(0,243,255,0.2)] transition-all uppercase tracking-wider font-outfit">
-            Portal
-          </button>
+          <a href="/portal" className="hidden sm:block">
+            <button className="px-5 py-2 rounded-full bg-gradient-to-r from-electric-cyan/10 to-neon-purple/10 border border-electric-cyan/30 text-xs font-bold text-white hover:border-electric-cyan/60 hover:shadow-[0_0_15px_rgba(0,243,255,0.2)] transition-all uppercase tracking-wider font-outfit cursor-pointer">
+              Portal
+            </button>
+          </a>
         </div>
 
       </div>
