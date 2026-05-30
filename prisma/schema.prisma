@@ -1,6 +1,5 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
 }
 
 generator client {
@@ -64,8 +63,8 @@ model Service {
   name             String           @unique
   slug             String           @unique
   description      String
-  features         String[]         // Detailed bullet list of what is included
-  basePrice        Decimal          @db.Decimal(10, 2)
+  features         String         // Comma-separated list of features included
+  basePrice        Float
   estimatedDays    Int
   isActive         Boolean          @default(true)
   bookings         ServiceBooking[]
@@ -80,7 +79,7 @@ model ServiceBooking {
   service         Service        @relation(fields: [serviceId], references: [id], onDelete: Restrict)
   serviceId       String
   
-  projectBrief    String         @db.Text
+  projectBrief    String
   budgetRange     String         // e.g., "$1k - $3k", "$5k - $10k"
   timelineChoice  String         // e.g., "Standard (30 days)", "Express (10 days)"
   
@@ -135,11 +134,11 @@ model Product {
   id             String          @id @default(uuid())
   name           String
   slug           String          @unique
-  description    String          @db.Text
-  price          Decimal         @db.Decimal(10, 2)
-  compareAtPrice Decimal?        @db.Decimal(10, 2) // Discount reference
+  description    String
+  price          Float
+  compareAtPrice Float? // Discount reference
   stock          Int             @default(0)
-  images         String[]        // S3 URLs or similar storage refs
+  images         String        // Comma-separated image URLs or JSON string
   specifications Json            // Flexible Key-Value JSON block (e.g. GPU VRAM, RAM Speed)
   isFeatured     Boolean         @default(false)
   
@@ -156,7 +155,7 @@ model Product {
 model ProductReview {
   id        String   @id @default(uuid())
   rating    Int      // 1 to 5 stars
-  comment   String   @db.Text
+  comment   String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -189,7 +188,7 @@ model Order {
   user            User        @relation(fields: [userId], references: [id], onDelete: Restrict)
   userId          String
   status          OrderStatus @default(PENDING)
-  totalAmount     Decimal     @db.Decimal(10, 2)
+  totalAmount     Float
   
   shippingAddress String
   billingAddress  String
@@ -208,7 +207,7 @@ model OrderItem {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
   productId String
   quantity  Int
-  price     Decimal  @db.Decimal(10, 2) // Capture purchase-time price
+  price     Float // Capture purchase-time price
   
   @@unique([orderId, productId])
 }

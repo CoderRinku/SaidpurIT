@@ -44,6 +44,29 @@ export default function Motherboard({ scrollProgress }: MotherboardProps) {
     return temp;
   }, []);
 
+  // Memoize circuits JSX to prevent re-instantiating TubeGeometry on every scroll/render
+  const circuitsJSX = useMemo(() => {
+    return circuits.map((curve, idx) => (
+      <line key={idx}>
+        <tubeGeometry args={[curve, 20, 0.008, 4, false]} />
+        <meshBasicMaterial
+          color={idx % 2 === 0 ? "#00f3ff" : "#b026ff"}
+          transparent
+          opacity={0.3 + Math.sin(idx + Math.random()) * 0.2}
+        />
+      </line>
+    ));
+  }, [circuits]);
+
+  // Memoize particle positions to prevent recreation of Float32Array on every render
+  const particlePositions = useMemo(() => {
+    const arr = new Float32Array(300 * 3);
+    for (let i = 0; i < 300 * 3; i++) {
+      arr[i] = (Math.random() - 0.5) * 12;
+    }
+    return arr;
+  }, []);
+
   // Frame update loop
   useFrame((state) => {
     if (!groupRef.current) return;
@@ -71,17 +94,8 @@ export default function Motherboard({ scrollProgress }: MotherboardProps) {
 
   return (
     <group ref={groupRef}>
-      {/* 1. Procedural Motherboard traces */}
-      {circuits.map((curve, idx) => (
-        <line key={idx}>
-          <tubeGeometry args={[curve, 20, 0.008, 4, false]} />
-          <meshBasicMaterial
-            color={idx % 2 === 0 ? "#00f3ff" : "#b026ff"}
-            transparent
-            opacity={0.3 + Math.sin(idx + Math.random()) * 0.2}
-          />
-        </line>
-      ))}
+      {/* 1. Procedural Motherboard traces (Memoized to prevent lag) */}
+      {circuitsJSX}
 
       {/* 2. Central Processing Unit (CPU) */}
       <mesh position={[0, 0, 0]} userData={{ initialZ: 0 }}>
@@ -148,17 +162,12 @@ export default function Motherboard({ scrollProgress }: MotherboardProps) {
         </mesh>
       ))}
 
-      {/* Ambient neural grid particles */}
+      {/* Ambient neural grid particles (Memoized Float32Array to save memory GC) */}
       <points>
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            args={[
-              new Float32Array(
-                Array.from({ length: 300 }, () => (Math.random() - 0.5) * 12)
-              ),
-              3,
-            ]}
+            args={[particlePositions, 3]}
           />
         </bufferGeometry>
         <pointsMaterial
